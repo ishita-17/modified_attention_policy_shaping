@@ -62,7 +62,7 @@ class QTablePolicy:
 
     def learn_task(self, env):
         for episode in range(self.total_episodes):
-            print("Episode: ", episode)    
+            print("Episode: ", episode+1)    
             episode_reward = 0
             num_steps = 0
             env.reset()
