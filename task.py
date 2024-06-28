@@ -94,7 +94,7 @@ class Task_Move(Task):
         return action.execute(states, self.current_state, self.distance_delta, arm)
 
     def reset(self, arm):
-        #self.arm.home_arm()
+        arm.home_arm()
         self.x_start = 0.06
         self.y_start = -0.27
         self.z_start = -0.44
