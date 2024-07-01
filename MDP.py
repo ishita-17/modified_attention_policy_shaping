@@ -64,7 +64,7 @@ class QTablePolicy:
 
     def learn_task(self, env):
         for episode in range(self.total_episodes):
-            print("Episode: ", episode+1)    
+            print("Episode: ", episode+1)   
             episode_reward = 0
             num_steps = 0
             env.reset()
@@ -96,7 +96,7 @@ class QTablePolicy:
         possible_actions = state.get_action_indices()
         if (check_explore < self.exploration_rate):
             q_prob = np.array([1/len(possible_actions) for i in range(len(possible_actions))])
-            #print("HIII", possible_actions)
+            #print("Possible actions", possible_actions)
         else:
             q_prob = F.softmax(torch.tensor([self.q_table[state][action]/self.exploration_rate for action in possible_actions]),dim = 0).detach().numpy()
             # action_index = np.random.choice(np.flatnonzero(q_prob == q_prob.max()))
@@ -115,6 +115,7 @@ class QTablePolicy:
                     prob[i] = 0
         else:
             print("Checking for good actions without supervision.")
+            flag = 0
             similarity_index = self.state_similarity_check(state)
             org_prob = prob[similarity_index]
             for i in range(len(possible_actions)):
@@ -169,7 +170,6 @@ class QTablePolicy:
             #print(self.q_table[state][action_index])
             #print(np.max(self.q_table[state]))
             if self.q_table[state][action_index] > self.old_reward:
-                #print("HIIIIIIIIIIIIIIIIIIIII")
                 #n = int(input("Enter feedback: "))
                 self.feedback[state][action_index] += 1
                 state.set_actions_good(action_index)
