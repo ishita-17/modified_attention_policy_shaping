@@ -115,7 +115,6 @@ class QTablePolicy:
                     prob[i] = 0
         else:
             print("Checking for good actions without supervision.")
-            flag = 0
             similarity_index = self.state_similarity_check(state)
             org_prob = prob[similarity_index]
             for i in range(len(possible_actions)):
@@ -123,7 +122,7 @@ class QTablePolicy:
                    prob[i]= 0
             if similarity_index != -1:
                 print("Found a good action using similarity metric.")
-                prob[similarity_index] = org_prob * 1.5      # increase by 50%
+                #prob[similarity_index] = org_prob * 1.5      # increase by 50%
         print("New Probability", prob)
         action_index = possible_actions[np.random.choice(np.flatnonzero(prob == prob.max()))]
         print("Action index: ", action_index)
