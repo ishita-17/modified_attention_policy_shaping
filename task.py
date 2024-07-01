@@ -49,7 +49,7 @@ class Task_Stack(Task):
 
     def take_action(self, states, action_index, arm):
         action = self.actions[action_index]
-        print("Action in task: ", action_index)
+        #print("Action in task: ", action_index)
         return action.execute(states, arm)
 
     def reset(self, arm):
@@ -90,7 +90,7 @@ class Task_Move(Task):
 
     def take_action(self, states, action_index, arm):
         action = self.actions[action_index]
-        print("Action in task: ", action)
+        #print("Action in task: ", action)
         return action.execute(states, self.current_state, self.distance_delta, arm)
 
     def reset(self, arm):

@@ -5,6 +5,8 @@ import torch
 import torch.nn.functional as F
 import math
 
+np.random.seed(0)
+
 class Environment:
     
     def __init__(self, arm, task):
@@ -44,7 +46,7 @@ class Environment:
 
 class QTablePolicy:
 
-    def __init__(self, states, actions_length, total_episodes = 10, steps_per_episode = 10, exploration_rate = 0.5, exploration_decay = 0.01, discount_factor = 0.9, learning_rate = 0.1):
+    def __init__(self, states, actions_length, total_episodes = 20, steps_per_episode = 10, exploration_rate = 0.5, exploration_decay = 0.01, discount_factor = 0.9, learning_rate = 0.1):
         self.q_table = {}
         self.feedback = {}
         self.old_reward = 0
@@ -71,9 +73,9 @@ class QTablePolicy:
                 if stop:
                     print("BREAK")
                     break
-            print("===================================")
             print("Episode reward: ", episode_reward)
             print("Num steps: ", num_steps)
+            print("===================================")
         print("||||||||||||||||||||||||||||||||||")
         self.exploration_rate *= (1 - self.exploration_decay)
         print("Q table")
@@ -101,30 +103,46 @@ class QTablePolicy:
         p_prob = self.get_p_action(state, possible_actions)
         #print(q_prob)
         prob = q_prob * p_prob
+        print("Old probability: ", prob)
         if (episode_num <= (0.5*self.total_episodes)) or (episode_num >= (0.9*self.total_episodes)):
+            print("Getting attention now.")
             random_number = np.random.choice([0, 1], p=[0.5, 0.5])
+            #print("Random number ", random_number)
             for i in range(len(possible_actions)):
                 if (len(state.get_actions_seen()) != 0) and (possible_actions[i] in state.get_actions_seen()) and (random_number == 0):
                     prob[i] = 0
                 elif (len(state.get_actions_good()) != 0)  and (possible_actions[i] not in state.get_actions_good()) and (random_number == 1):
                     prob[i] = 0
         else:
+            print("Checking for good actions without supervision.")
+            similarity_index = self.state_similarity_check(state)
+            org_prob = prob[similarity_index]
             for i in range(len(possible_actions)):
                 if (len(state.get_actions_good()) != 0)  and (possible_actions[i] not in state.get_actions_good()):
-                    prob[i] = 0
-        print(prob)
+                   prob[i]= 0
+            if similarity_index != -1:
+                print("Found a good action using similarity metric.")
+                prob[similarity_index] = org_prob * 1.5      # increase by 50%
+        print("New Probability", prob)
         action_index = possible_actions[np.random.choice(np.flatnonzero(prob == prob.max()))]
         print("Action index: ", action_index)
         new_state = task.take_action(self.states, action_index, arm)
         task.set_current_state(new_state)
         # print("New state: ", str(new_state))
         return new_state, action_index
+    
+    def state_similarity_check(self, state):
+        possible_actions = state.action_indices
+        for i in self.feedback.values():
+            for j in range(len(possible_actions)):
+                if i[possible_actions[j]] > 0: 
+                    return j
+        return -1
 
     def get_p_action(self, state, possible_actions):
         prob = []
         trust = 0.9
         if all(value == 0 for value in self.feedback[state]):
-            #print("HELLOOO", possible_actions)
             return np.array([1/len(possible_actions) for i in range(len(possible_actions))])
         for i in range(len(possible_actions)):
             prob.append(math.pow(trust,self.feedback[state][i])/
@@ -170,55 +188,3 @@ if __name__=="__main__":
     
         
 
-''' Old Functions:
-
-    # returns the state number and action index
-    def choose_action(self, state_index):
-        # assuming states is a dict mapping state_index : state() objects
-        check_explore = rm.uniform(0, 1)
-        possible_actions = self.states[state_index].actions
-        print("Possible actions",possible_actions)
-        if (check_explore < self.exploration_rate):
-            action_choice = rm.choice(possible_actions)
-        else:
-            #print("else exploitation")
-            q_vals_for_state = np.array([]) #np.empty(len(possible_actions))
-            for action in possible_actions: 
-                #print("Action: ", possible_actions[index])
-                #print("Q table: ", q_table[state_index, possible_actions[index]])
-                np.append(q_vals_for_state, self.q_table[state_index, action])
-            #print("Actions For State: ", q_vals_for_state)
-            index_of_highest = np.argmax(q_vals_for_state)
-            # print(index_of_highest)
-            action_choice = possible_actions[index_of_highest]
-        action_index = action_choice
-        #print("Action selected: ", actions[action_index])
-        action = task.Action.ALL[action_index]
-        result = action.do(state_index)
-        return result, action_index #getattr(task, self.actions[action_index][0])(self.actions[action_index][1]), action_index
-
-            # returns the state number and action index
-    def choose_action(self, state_index):
-        # assuming states is a dict mapping state_index : state() objects
-        check_explore = rm.uniform(0, 1)
-        possible_actions = self.states[state_index].actions
-        print("Possible actions",possible_actions)
-        if (check_explore < self.exploration_rate):
-            action_choice = rm.choice(possible_actions)
-        else:
-            #print("else exploitation")
-            q_vals_for_state = np.array([]) #np.empty(len(possible_actions))
-            for action in possible_actions: 
-                #print("Action: ", possible_actions[index])
-                #print("Q table: ", q_table[state_index, possible_actions[index]])
-                np.append(q_vals_for_state, self.q_table[state_index, action])
-            #print("Actions For State: ", q_vals_for_state)
-            index_of_highest = np.argmax(q_vals_for_state)
-            # print(index_of_highest)
-            action_choice = possible_actions[index_of_highest]
-        action_index = action_choice
-        #print("Action selected: ", actions[action_index])
-        action = task.Action.ALL[action_index]
-        result = action.do(state_index)
-        return result, action_index #getattr(task, self.actions[action_index][0])(self.actions[action_index][1]), action_index
-'''
