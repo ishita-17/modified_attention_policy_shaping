@@ -94,9 +94,9 @@ class QTablePolicy:
         # assumes that possible_actions is a list of action indices corresponding to the 
         # actions list in task
         possible_actions = state.get_action_indices()
+        print("Possible actions: ", possible_actions)
         if (check_explore < self.exploration_rate):
             q_prob = np.array([1/len(possible_actions) for i in range(len(possible_actions))])
-            #print("Possible actions", possible_actions)
         else:
             q_prob = F.softmax(torch.tensor([self.q_table[state][action]/self.exploration_rate for action in possible_actions]),dim = 0).detach().numpy()
             # action_index = np.random.choice(np.flatnonzero(q_prob == q_prob.max()))
