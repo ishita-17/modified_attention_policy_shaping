@@ -73,7 +73,7 @@ class QTablePolicy:
             print("Episode: ", episode+1)  
             print("Episode reward: ", episode_reward)
             print("Num steps: ", num_steps)
-            time.sleep(5)
+            #time.sleep(5)
             print("===================================")
         print("||||||||||||||||||||||||||||||||||")
         self.exploration_rate *= (1 - self.exploration_decay)
@@ -103,7 +103,7 @@ class QTablePolicy:
             print("Getting attention now.")
             random_number = np.random.choice([0, 1], p=[0.5, 0.5])
             for i in range(len(possible_actions)):
-                if (len(state.get_actions_seen()) != 0) (len(possible_actions) != len(state.get_actions_seen())) and (possible_actions[i] in state.get_actions_seen()) and (random_number == 0):
+                if (len(state.get_actions_seen()) != 0) and (len(possible_actions) != len(state.get_actions_seen())) and (possible_actions[i] in state.get_actions_seen()) and (random_number == 0):
                     prob[i] = 0
                     print("actions seen")
                     #time.sleep(1)
@@ -120,7 +120,7 @@ class QTablePolicy:
                    prob[i]= 0
             if similarity_index != -1:
                 print("Found a good action using similarity metric.")
-                prob[similarity_index] = org_prob * 1.5      # increase by 50%
+                #prob[similarity_index] = org_prob * 1.5      # increase by 50%
         print("New Probability", prob)
         action_index = possible_actions[np.random.choice(np.flatnonzero(prob == prob.max()))]
         print("Action index: ", action_index)
