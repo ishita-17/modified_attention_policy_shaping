@@ -4,6 +4,7 @@ import task
 import torch
 import torch.nn.functional as F
 import math
+import time
 
 np.random.seed(0)
 
@@ -60,8 +61,7 @@ class QTablePolicy:
             self.feedback[state] = np.zeros(actions_length)
 
     def learn_task(self, env):
-        for episode in range(self.total_episodes):
-            print("Episode: ", episode+1)   
+        for episode in range(self.total_episodes): 
             episode_reward = 0
             num_steps = 0
             env.reset()
@@ -70,8 +70,10 @@ class QTablePolicy:
                 if stop:
                     print("BREAK")
                     break
+            print("Episode: ", episode+1)  
             print("Episode reward: ", episode_reward)
             print("Num steps: ", num_steps)
+            time.sleep(5)
             print("===================================")
         print("||||||||||||||||||||||||||||||||||")
         self.exploration_rate *= (1 - self.exploration_decay)
@@ -101,10 +103,14 @@ class QTablePolicy:
             print("Getting attention now.")
             random_number = np.random.choice([0, 1], p=[0.5, 0.5])
             for i in range(len(possible_actions)):
-                if (len(state.get_actions_seen()) != 0) and (possible_actions[i] in state.get_actions_seen()) and (random_number == 0):
+                if (len(state.get_actions_seen()) != 0) (len(possible_actions) != len(state.get_actions_seen())) and (possible_actions[i] in state.get_actions_seen()) and (random_number == 0):
                     prob[i] = 0
+                    print("actions seen")
+                    #time.sleep(1)
                 elif (len(state.get_actions_good()) != 0)  and (possible_actions[i] not in state.get_actions_good()) and (random_number == 1):
                     prob[i] = 0
+                    print("actions good")
+                    #time.sleep(1)
         else:
             print("Checking for good actions without supervision.")
             similarity_index = self.state_similarity_check(state)
@@ -146,17 +152,17 @@ class QTablePolicy:
                 
         similar = [item for item in similar if item.get_features() != f]
         print("Similar states: ", [i.get_features() for i in similar])
-        for i in self.feedback.values():
+        '''for i in self.feedback.values():
             for j in range(len(possible_actions)):
                 if i[possible_actions[j]] > 0: 
-                    return j
-        '''for i in self.feedback.keys():
+                    return j'''
+        for i in self.feedback.keys():
             if i in similar:
                 for j in range(len(possible_actions)):
                     val = self.feedback[i]
                     if val[possible_actions[j]] > 0: 
                         print(j)
-                        return j'''
+                        return j
         return -1
 
     def get_p_action(self, state, possible_actions):
