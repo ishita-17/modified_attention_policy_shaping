@@ -15,17 +15,14 @@ class Environment:
         self.states = self.task.get_states()
         self.actions_length = self.task.get_actions_length()
         
-    # returns num_steps, stop, episode_reward
     def step(self, num_steps, policy, episode_reward, episode_num):
         num_steps += 1
         current_state = self.task.get_current_state()
         print("Current state: ", current_state.to_string())
         new_state, action_index = policy.get_action(current_state, self.task, self.arm, episode_num)
         print("Action taken:", action_index)
-        #print("New state: ", new_state.to_string())
         current_reward = new_state.get_reward()
         episode_reward += current_reward
-        #print("Current reward: ", current_reward)
         if (episode_num > (0.5*policy.total_episodes)) or (episode_num < (0.9*policy.total_episodes)):
             policy.update_q_table(current_state, new_state, current_reward, action_index)
             policy.update_f_table(current_state, action_index)
@@ -87,12 +84,9 @@ class QTablePolicy:
             if (list(self.states.values())[i] in self.q_table.keys()):
                 print("State ", str(i),": ", self.feedback[list(self.states.values())[i]])
     
-    
     def get_action(self, state, task, arm, episode_num):
         # returns the state and action index
         check_explore = np.random.uniform(0,1)
-        # assumes that possible_actions is a list of action indices corresponding to the 
-        # actions list in task
         possible_actions = state.get_action_indices()
         print("Possible actions: ", possible_actions)
         if (check_explore < self.exploration_rate):
@@ -101,13 +95,11 @@ class QTablePolicy:
             q_prob = F.softmax(torch.tensor([self.q_table[state][action]/self.exploration_rate for action in possible_actions]),dim = 0).detach().numpy()
             # action_index = np.random.choice(np.flatnonzero(q_prob == q_prob.max()))
         p_prob = self.get_p_action(state, possible_actions)
-        #print(q_prob)
         prob = q_prob * p_prob
         print("Old probability: ", prob)
         if (episode_num <= (0.5*self.total_episodes)) or (episode_num >= (0.9*self.total_episodes)):
             print("Getting attention now.")
             random_number = np.random.choice([0, 1], p=[0.5, 0.5])
-            #print("Random number ", random_number)
             for i in range(len(possible_actions)):
                 if (len(state.get_actions_seen()) != 0) and (possible_actions[i] in state.get_actions_seen()) and (random_number == 0):
                     prob[i] = 0
@@ -122,7 +114,7 @@ class QTablePolicy:
                    prob[i]= 0
             if similarity_index != -1:
                 print("Found a good action using similarity metric.")
-                #prob[similarity_index] = org_prob * 1.5      # increase by 50%
+                prob[similarity_index] = org_prob * 1.5      # increase by 50%
         print("New Probability", prob)
         action_index = possible_actions[np.random.choice(np.flatnonzero(prob == prob.max()))]
         print("Action index: ", action_index)
@@ -133,10 +125,38 @@ class QTablePolicy:
     
     def state_similarity_check(self, state):
         possible_actions = state.action_indices
+        f = state.get_features()
+        print("yooo", f)
+        similar = []
+        for i in self.feedback.keys():
+            count = 0
+            ctr = 0
+            for j in range(len(i.get_features())):
+                if f.count("1") == 1:
+                    if (f[j] == "0") and (i.get_features()[j] == "0"):
+                        ctr+=1
+                        if (ctr == 2):
+                            similar.append(i)
+                elif (f[j] == "1") and (i.get_features()[j] == "1"):
+                    similar.append(i)
+                elif (f[j] == "0") and (i.get_features()[j] == "0"):
+                    count+=1
+                    if (count == 3):
+                        similar.append(i)
+                
+        similar = [item for item in similar if item.get_features() != f]
+        print("Similar states: ", [i.get_features() for i in similar])
         for i in self.feedback.values():
             for j in range(len(possible_actions)):
                 if i[possible_actions[j]] > 0: 
                     return j
+        '''for i in self.feedback.keys():
+            if i in similar:
+                for j in range(len(possible_actions)):
+                    val = self.feedback[i]
+                    if val[possible_actions[j]] > 0: 
+                        print(j)
+                        return j'''
         return -1
 
     def get_p_action(self, state, possible_actions):
@@ -166,8 +186,6 @@ class QTablePolicy:
         if action_index not in state.get_actions_seen():
             state.set_actions_seen(action_index)
         else:
-            #print(self.q_table[state][action_index])
-            #print(np.max(self.q_table[state]))
             if self.q_table[state][action_index] > self.old_reward:
                 #n = int(input("Enter feedback: "))
                 self.feedback[state][action_index] += 1

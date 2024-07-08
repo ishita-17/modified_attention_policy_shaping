@@ -66,19 +66,24 @@ class Task_Move(Task):
         for i in range(grid_dim):
             for j in range(grid_dim):
                 possible_actions = [0, 1, 2, 3]
+                feature = "0000"
                 if (i == 0):
                     # we can't move up
                     possible_actions.remove(0)
+                    feature = "1" + feature[1:]
                 if (i == grid_dim - 1):
                     # we can't move down
                     possible_actions.remove(1)
+                    feature = feature[:1] + "1" + feature[2:]
                 if (j == 0):
                     # we can't move left
                     possible_actions.remove(2)
+                    feature = feature[:2] + "1" + feature[3:]
                 if (j == grid_dim - 1):
                     # we can't move right
                     possible_actions.remove(3)
-                self.states[(i, j)] = state.State(possible_actions, -1, i, j)
+                    feature = feature[:3] + "1" + feature[4:]
+                self.states[(i, j)] = state.State(possible_actions, -1, tuple(feature), i ,j)
         self.states[(grid_dim - 1, grid_dim - 1)].reward = 10
         self.distance_delta = 0.1
         self.terminal_states = [self.states[(grid_dim - 1, grid_dim - 1)]]
@@ -102,7 +107,3 @@ class Task_Move(Task):
         arm.close_gripper()
         super().reset(arm)
         
-'''
-class Task_Sort(Task):
-
-'''

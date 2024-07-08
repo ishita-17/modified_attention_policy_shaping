@@ -1,9 +1,10 @@
 
 class State:
-    def __init__(self, actions = [], reward = 0, *args, **kwargs):
+    def __init__(self, actions = [], reward = 0, feature = (), *args, **kwargs):
         self.desc = args if args else kwargs
         # contains the indices of possible actions
         #self.description = location
+        self.feature = feature
         self.action_indices = actions
         self.actions_seen = []
         self.actions_good = []
@@ -16,7 +17,7 @@ class State:
         return self.action_indices
     
     def to_string(self):
-        return str(self.desc) 
+        return str(self.desc)
     
     def get_actions_seen(self):
         return self.actions_seen
@@ -29,3 +30,6 @@ class State:
         
     def set_actions_good(self, action_index):
         self.actions_good.append(action_index)
+        
+    def get_features(self):
+        return ''.join(map(str, self.feature))
