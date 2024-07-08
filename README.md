@@ -1,6 +1,6 @@
 ## Modified Attention Policy Shaping
 
-This is the implementation of the paper [Policy Shaping with Supervisory Attention Driven Exploration](https://ieeexplore.ieee.org/abstract/document/8594312). 
+This work is the extension of the paper [Policy Shaping with Supervisory Attention Driven Exploration](https://ieeexplore.ieee.org/abstract/document/8594312). 
 
 This code uses the [Armpy library](https://github.com/AABL-Lab/armpy) from [AABL Lab](https://aabl.cs.tufts.edu/) which uses ROS 1 Noetic and the MOVEIT package.
 
