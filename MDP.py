@@ -60,7 +60,7 @@ class QTablePolicy:
             self.q_table[state] = np.zeros(actions_length)
             self.feedback[state] = np.zeros(actions_length)
 
-    def learn_task(self, env):
+    def learn_task(self, env, f):
         for episode in range(self.total_episodes): 
             episode_reward = 0
             num_steps = 0
@@ -70,21 +70,27 @@ class QTablePolicy:
                 if stop:
                     print("BREAK")
                     break
-            print("Episode: ", episode+1)  
+            print("Episode: ", episode+1)
+            f.write("\nEpisode: " + str(episode+1))  
             print("Episode reward: ", episode_reward)
             print("Num steps: ", num_steps)
+            f.write("\n\tNum steps: " + str(num_steps))
             #time.sleep(5)
             print("===================================")
         print("||||||||||||||||||||||||||||||||||")
         self.exploration_rate *= (1 - self.exploration_decay)
         print("Q table")
+        f.write("\nQ Table")
         for i in range(len(self.states)):
             if (list(self.states.values())[i] in self.q_table.keys()):
                 print("State ", str(i),": ", self.q_table[list(self.states.values())[i]])
+                f.write("\nState "+ str(i)+": "+ str(self.q_table[list(self.states.values())[i]]))
         print("Feedback table")
+        f.write("\nFeedback Table")
         for i in range(len(self.states)):
             if (list(self.states.values())[i] in self.q_table.keys()):
                 print("State ", str(i),": ", self.feedback[list(self.states.values())[i]])
+                f.write("\nState "+ str(i)+": "+ str(self.feedback[list(self.states.values())[i]]))
     
     def get_action(self, state, task, arm, episode_num):
         # returns the state and action index
@@ -120,7 +126,7 @@ class QTablePolicy:
                    prob[i]= 0
             if similarity_index != -1:
                 print("Found a good action using similarity metric.")
-                #prob[similarity_index] = org_prob * 1.5      # increase by 50%
+                prob[similarity_index] = org_prob * 1.5      # increase by 50%
         print("New Probability", prob)
         action_index = possible_actions[np.random.choice(np.flatnonzero(prob == prob.max()))]
         print("Action index: ", action_index)
@@ -206,7 +212,10 @@ if __name__=="__main__":
     task = task.Task_Move(3)
     env = Environment(robot.Robot(), task)
     current_policy = QTablePolicy(env.states, env.actions_length)
-    current_policy.learn_task(env)
+    f = open("results.txt", "a")
+    f.write("Similarity metric with actions for 3x3")
+    current_policy.learn_task(env, f)
+    f.close()
     
     
         
