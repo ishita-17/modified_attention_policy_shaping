@@ -1,0 +1,60 @@
+---
+title: "Statistical Results from Modified Policy Shaping Experiments"
+author: "Ishita Sarraf"
+date: "2024-07-10"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+d1 <- read.csv("AMPS_results.csv")
+d2 <- read.csv("Best_Actions_Results.csv")
+d3 <- read.csv("Similarity_Results.csv")
+d <- read.csv("experiment_results.csv")
+```
+
+```{r}
+new1 <- d1 %>%
+  group_by(Episode) %>%
+  summarize(reward_per_episode = mean(Reward))
+```
+
+```{r}
+new2 <- d2 %>%
+  group_by(Episode) %>%
+  summarize(reward_per_episode = mean(Reward))
+```
+
+```{r}
+new3 <- d3 %>%
+  group_by(Episode) %>%
+  summarize(reward_per_episode = mean(Reward))
+```
+
+
+```{r}
+avg_reward <- d %>%
+  group_by(Experiment_Name, Episode) %>%
+  summarise(avg_reward = mean(Reward))
+```
+
+
+```{r}
+ggplot(d, aes(x = Episode, y = Reward, color = Experiment_Name)) +
+  geom_rect(aes(xmin = 1, xmax = 5, ymin = -Inf, ymax = Inf), fill = "grey", color = NA, alpha = 0.01) +
+  geom_rect(aes(xmin = 20, xmax = 25, ymin = -Inf, ymax = Inf), fill = "grey", color = NA, alpha = 0.01) +
+  geom_line()+
+  labs(x = "Episode Number", y = "Total Reward",
+       title = "Reward for 50 episodes averaged over 15 runs")+
+  theme_linedraw()+
+  guides(color = guide_legend(title = NULL))
+```
+

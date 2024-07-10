@@ -6,7 +6,7 @@ import torch.nn.functional as F
 import math
 import time
 
-np.random.seed(0)
+# np.random.seed(0)
 
 class Environment:
     
@@ -44,7 +44,7 @@ class Environment:
 
 class QTablePolicy:
 
-    def __init__(self, states, actions_length, total_episodes = 20, steps_per_episode = 10, exploration_rate = 0.5, exploration_decay = 0.01, discount_factor = 0.9, learning_rate = 0.1):
+    def __init__(self, states, actions_length, total_episodes = 50, steps_per_episode = 40, exploration_rate = 0.5, exploration_decay = 0.01, discount_factor = 0.9, learning_rate = 0.1):
         self.q_table = {}
         self.feedback = {}
         self.old_reward = 0
@@ -71,26 +71,21 @@ class QTablePolicy:
                     print("BREAK")
                     break
             print("Episode: ", episode+1)
-            f.write("\nEpisode: " + str(episode+1))  
             print("Episode reward: ", episode_reward)
             print("Num steps: ", num_steps)
-            f.write("\n\tNum steps: " + str(num_steps))
+            f.write(str(40-num_steps) + "\n")
             #time.sleep(5)
             print("===================================")
         print("||||||||||||||||||||||||||||||||||")
         self.exploration_rate *= (1 - self.exploration_decay)
         print("Q table")
-        f.write("\nQ Table")
         for i in range(len(self.states)):
             if (list(self.states.values())[i] in self.q_table.keys()):
                 print("State ", str(i),": ", self.q_table[list(self.states.values())[i]])
-                f.write("\nState "+ str(i)+": "+ str(self.q_table[list(self.states.values())[i]]))
         print("Feedback table")
-        f.write("\nFeedback Table")
         for i in range(len(self.states)):
             if (list(self.states.values())[i] in self.q_table.keys()):
                 print("State ", str(i),": ", self.feedback[list(self.states.values())[i]])
-                f.write("\nState "+ str(i)+": "+ str(self.feedback[list(self.states.values())[i]]))
     
     def get_action(self, state, task, arm, episode_num):
         # returns the state and action index
@@ -105,7 +100,7 @@ class QTablePolicy:
         p_prob = self.get_p_action(state, possible_actions)
         prob = q_prob * p_prob
         print("Old probability: ", prob)
-        if (episode_num <= (0.5*self.total_episodes)) or (episode_num >= (0.9*self.total_episodes)):
+        if (episode_num <= 5) or (episode_num >= 20 and episode_num <= 25):
             print("Getting attention now.")
             random_number = np.random.choice([0, 1], p=[0.5, 0.5])
             for i in range(len(possible_actions)):
@@ -124,7 +119,7 @@ class QTablePolicy:
             for i in range(len(possible_actions)):
                 if (len(state.get_actions_good()) != 0)  and (possible_actions[i] not in state.get_actions_good()):
                    prob[i]= 0
-            if similarity_index != -1:
+            if similarity_index != -1:  # identifying similar states
                 print("Found a good action using similarity metric.")
                 prob[similarity_index] = org_prob * 1.5      # increase by 50%
         print("New Probability", prob)
@@ -158,10 +153,12 @@ class QTablePolicy:
                 
         similar = [item for item in similar if item.get_features() != f]
         print("Similar states: ", [i.get_features() for i in similar])
+        # Best action selection 
         '''for i in self.feedback.values():
             for j in range(len(possible_actions)):
                 if i[possible_actions[j]] > 0: 
                     return j'''
+        # Similarity Metric selection 
         for i in self.feedback.keys():
             if i in similar:
                 for j in range(len(possible_actions)):
@@ -209,11 +206,10 @@ class QTablePolicy:
 
 if __name__=="__main__":
     #task = task.Task_Stack()
-    task = task.Task_Move(3)
+    task = task.Task_Move(7)
     env = Environment(robot.Robot(), task)
     current_policy = QTablePolicy(env.states, env.actions_length)
     f = open("results.txt", "a")
-    f.write("Similarity metric with actions for 3x3")
     current_policy.learn_task(env, f)
     f.close()
     
