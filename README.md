@@ -6,6 +6,8 @@ This code uses the [Armpy library](https://github.com/AABL-Lab/armpy) from [AABL
 
 Additionally, this code has been modified using [Q-Learning Demo](https://github.com/anisha1045/Q-Learning-Demo) which the author collaborated on. 
 
+This task is a gridworld task for a square dimension grid world. The author conducted tests on a 7x7 grid world. 
+
 ### Information about the files 
 
 `MDP.py` : The Python file that runs the Supervisory Attention Driven Exploration algorithm for the task by creating the environment, actions, and states. 
@@ -21,3 +23,7 @@ Additionally, this code has been modified using [Q-Learning Demo](https://github
 `robot.py` : A Python file that initializes the armpy module to create an instance of the arm.
 
 `test.py` : A Python file that helps in testing ROS commands on the arm through the command line. 
+
+`result.txt` : A text file that stores the reward from each run for each episode
+
+`stats_calculations` : A folder that has files that help do statistical calculations from the output
