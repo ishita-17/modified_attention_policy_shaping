@@ -9,6 +9,8 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## Loading libraries and reading files
+
 ```{r}
 library(dplyr)
 library(ggplot2)
@@ -20,6 +22,8 @@ d2 <- read.csv("Best_Actions_Results.csv")
 d3 <- read.csv("Similarity_Results.csv")
 d <- read.csv("experiment_results.csv")
 ```
+
+## Cleaning Data
 
 ```{r}
 new1 <- d1 %>%
@@ -39,13 +43,13 @@ new3 <- d3 %>%
   summarize(reward_per_episode = mean(Reward))
 ```
 
-
 ```{r}
 avg_reward <- d %>%
   group_by(Experiment_Name, Episode) %>%
   summarise(avg_reward = mean(Reward))
 ```
 
+## Creating Comparison Graph
 
 ```{r}
 ggplot(d, aes(x = Episode, y = Reward, color = Experiment_Name)) +
@@ -57,4 +61,25 @@ ggplot(d, aes(x = Episode, y = Reward, color = Experiment_Name)) +
   theme_linedraw()+
   guides(color = guide_legend(title = NULL))
 ```
+## ANOVA and Tukey HSD
 
+```{r}
+anova_model <- aov(Reward ~ Experiment_Name, data = d)
+anova_model
+```
+```{r}
+hsd <- TukeyHSD(anova_model)
+hsd
+```
+## Analysis
+
+"Best_Action" and "AMPS" have significantly different mean rewards.
+"Similarity" and "AMPS" have significantly different mean rewards.
+There is no significant difference in mean reward between "Similarity" and "Best_Action".
+We are 95% confident that the differences in mean rewards are accurate and not due to random chance assuming all assumptions for ANOVA are satisfied.
+
+```{r}
+plot(anova_model)
+```
+
+The data does not seem completely normal, and but the variance assumption seems satisfied. 
