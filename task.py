@@ -85,7 +85,7 @@ class Task_Move(Task):
                     feature = feature[:3] + "1" + feature[4:]
                 self.states[(i, j)] = state.State(possible_actions, -1, tuple(feature), i ,j)
         self.states[(grid_dim - 1, grid_dim - 1)].reward = 10
-        self.distance_delta = 0.1
+        self.distance_delta = 0.03
         self.terminal_states = [self.states[(grid_dim - 1, grid_dim - 1)]]
         self.x_start = 0.06
         self.y_start = -0.27

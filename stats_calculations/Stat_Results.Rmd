@@ -44,23 +44,83 @@ new3 <- d3 %>%
 ```
 
 ```{r}
-avg_reward <- d %>%
-  group_by(Experiment_Name, Episode) %>%
-  summarise(avg_reward = mean(Reward))
+avg_reward1 <- d1 %>%
+  group_by(Episode) %>%
+  summarise(sd_reward = sd(Reward),
+            m = mean(Reward))
+avg_reward2 <- d2 %>%
+  group_by(Episode) %>%
+  summarise(sd_reward = sd(Reward),
+            m = mean(Reward))
+avg_reward3 <- d3 %>%
+  group_by(Episode) %>%
+  summarise(sd_reward = sd(Reward),
+            m = mean(Reward))
+new_d1 <- d %>%
+  filter(Experiment_Name == "AMPS") %>%
+  mutate(sd_val =  avg_reward1$sd_reward,
+         mean_val = avg_reward1$m) 
+new_d2 <- d %>%
+  filter(Experiment_Name == "Best_Action") %>%
+  mutate(sd_val =  avg_reward2$sd_reward,
+         mean_val = avg_reward2$m) 
+new_d3 <- d %>%
+  filter(Experiment_Name == "Similarity") %>%
+  mutate(sd_val =  avg_reward3$sd_reward,
+         mean_val = avg_reward3$m) 
+combined_df <- rbind(new_d1, new_d2, new_d3)
+
+```
+
+## Calculate mean and sd for each curve
+```{r}
+d %>%
+  group_by(Experiment_Name) %>%
+  summarize(m = mean(Reward),
+            sd = sd(Reward))
 ```
 
 ## Creating Comparison Graph
 
 ```{r}
-ggplot(d, aes(x = Episode, y = Reward, color = Experiment_Name)) +
+ggplot(combined_df, aes(x = Episode, y = Reward, color = Experiment_Name)) +
   geom_rect(aes(xmin = 1, xmax = 5, ymin = -Inf, ymax = Inf), fill = "grey", color = NA, alpha = 0.01) +
   geom_rect(aes(xmin = 20, xmax = 25, ymin = -Inf, ymax = Inf), fill = "grey", color = NA, alpha = 0.01) +
-  geom_line()+
-  labs(x = "Episode Number", y = "Total Reward",
-       title = "Reward for 50 episodes averaged over 15 runs")+
-  theme_linedraw()+
-  guides(color = guide_legend(title = NULL))
+  geom_line() +
+  geom_ribbon(aes(ymin = mean_val - sd_val, ymax = mean_val + sd_val, fill = Experiment_Name), alpha = 0.2, color = NA) +
+  scale_color_viridis_d() +
+  scale_fill_viridis_d() +
+  labs(x = "Episode Number", y = "Reward",
+       title = "Reward for 50 episodes averaged over 15 runs") +
+  theme_linedraw() +
+  guides(color = guide_legend(title = NULL),
+         fill = guide_legend(title = NULL)) +
+  theme(text = element_text(size = 20),
+        axis.text.x = element_text(hjust = 1),
+         axis.text.y = element_text(angle = 90, vjust = 1))
 ```
+
+
+```{r}
+# Calculate mean and standard deviation for each episode and experiment
+d_summary <- d %>%
+  group_by(Episode, Experiment_Name) %>%
+  summarise(
+    mean_Reward = mean(Reward),
+    sd_Reward = sd(Reward, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Plot
+ggplot(d_summary, aes(x = Episode, y = mean_Reward, color = Experiment_Name, fill = Experiment_Name)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = mean_Reward - sd_Reward, ymax = mean_Reward + sd_Reward), alpha = 0.2) +
+  labs(x = "Episode", y = "Reward", title = "Reward with Standard Deviation by Experiment") +
+  theme_minimal()
+```
+
+
+
 ## ANOVA and Tukey HSD
 
 ```{r}
