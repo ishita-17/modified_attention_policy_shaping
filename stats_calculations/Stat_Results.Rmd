@@ -86,7 +86,7 @@ d %>%
 ggplot(combined_df, aes(x = Episode, y = Reward, color = Experiment_Name)) +
   geom_rect(aes(xmin = 1, xmax = 5, ymin = -Inf, ymax = Inf), fill = "grey", color = NA, alpha = 0.01) +
   geom_rect(aes(xmin = 20, xmax = 25, ymin = -Inf, ymax = Inf), fill = "grey", color = NA, alpha = 0.01) +
-  geom_line() +
+  geom_line(linewidth = 1.7) +
   geom_ribbon(aes(ymin = mean_val - sd_val, ymax = mean_val + sd_val, fill = Experiment_Name), alpha = 0.2, color = NA) +
   scale_color_viridis_d() +
   scale_fill_viridis_d() +

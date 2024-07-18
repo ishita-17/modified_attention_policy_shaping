@@ -156,7 +156,7 @@ class QTablePolicy:
         # Best action selection 
         '''for i in self.feedback.values():
             for j in range(len(possible_actions)):
-                if i[possible_actions[j]] > 0: eeeee
+                if i[possible_actions[j]] > 0: 
                     return j'''
         # Similarity Metric selection 
         for i in self.feedback.keys():
